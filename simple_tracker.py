@@ -191,8 +191,13 @@ class GenerateReport:
             'base_link': self.base_link,
             'products': self.data
         }
+        print("Creating report...")
+        # Open file and input the json data received from AmazonAPI class!
+        with open(f'{DIRECTORY}/{file_name}.json', 'w') as f:
+            json.dump(report, f)
+        print("Done...")
 
-    # Calculate date the report is created   
+    # Calculate date the report is created
     def get_now(self):
         # Using datetime from datetime library
         now = datetime.now()
@@ -213,3 +218,4 @@ if __name__ == '__main__':
     amazon = AmazonAPI(NAME, FILTERS, BASE_URL, CURRENCY)
     data = amazon.run()
     print(len(data))
+    GenerateReport(NAME, FILTERS, BASE_URL, CURRENCY, data)
