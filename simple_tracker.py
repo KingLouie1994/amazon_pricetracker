@@ -173,20 +173,40 @@ class AmazonAPI:
 
 
 class GenerateReport:
-    self.data = data
+    # Initialising all values needed
+    def __init__(self, file_name, filters, base_link, currency, data):
+        self.data = data
         self.file_name = file_name
         self.filters = filters
         self.base_link = base_link
         self.currency = currency
         report = {
             'title': self.file_name,
+            # Function defined later to calculate the date the report is created
             'date': self.get_now(),
+            # Function defined later to sort products to find lowest price
             'best_item': self.get_best_item(),
             'currency': self.currency,
             'filters': self.filters,
             'base_link': self.base_link,
             'products': self.data
         }
+
+    # Calculate date the report is created   
+    def get_now(self):
+        # Using datetime from datetime library
+        now = datetime.now()
+        return now.strftime("%d/%m/%Y %H:%M:%S")
+
+    # Function to sort products to find lowest price
+    def get_best_item(self):
+        try:
+            return sorted(self.data, key=lambda k: k['price'])[0]
+        except Exception as e:
+            # Code runs if sorting fails
+            print(e)
+            print("Problem with sorting items")
+            return None
 
 
 if __name__ == '__main__':
