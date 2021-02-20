@@ -1,6 +1,15 @@
 # Imports from the amazon_config file
-from amazon_config import(get_web_driver_options, get_chrome_web_driver, set_ignore_certificate_error,
-                          set_browser_as_incognito, NAME, CURRENCY, FILTERS, BASE_URL, DIRECTORY)
+from amazon_config import (
+    get_web_driver_options,
+    get_chrome_web_driver,
+    set_ignore_certificate_error,
+    set_browser_as_incognito,
+    NAME,
+    CURRENCY,
+    FILTERS,
+    BASE_URL,
+    DIRECTORY
+)
 
 # Imports from third party libraries
 from selenium.webdriver.common.keys import Keys
@@ -110,12 +119,10 @@ class AmazonAPI:
                     price = price[price.find(self.currency):]
                     price = self.convert_price(price)
             except Exception as e:
-                print(e)
                 print(
                     f"Can't get price of a product - {self.driver.current_url}")
                 return None
         except Exception as e:
-            print(e)
             print(f"Can't get price of a product - {self.driver.current_url}")
             return None
         return price
@@ -157,7 +164,7 @@ class AmazonAPI:
         # Get all relevant links
         links = self.get_products_links()
         time.sleep(1)
-        # Default if no links can be found
+        # If no links can be found
         if not links:
             print('Stopped script.')
             return
@@ -173,12 +180,48 @@ class AmazonAPI:
 
 
 class GenerateReport:
-    def __init__(self):
-        pass
+    # Initialising all values needed
+    def __init__(self, file_name, filters, base_link, currency, data):
+        self.data = data
+        self.file_name = file_name
+        self.filters = filters
+        self.base_link = base_link
+        self.currency = currency
+        report = {
+            'title': self.file_name,
+            # Function defined later to calculate the date the report is created
+            'date': self.get_now(),
+            # Function defined later to sort products to find lowest price
+            'best_item': self.get_best_item(),
+            'currency': self.currency,
+            'filters': self.filters,
+            'base_link': self.base_link,
+            'products': self.data
+        }
+        print("Creating report...")
+        # Open file and input the json data received from AmazonAPI class!
+        with open(f'{DIRECTORY}/{file_name}.json', 'w') as f:
+            json.dump(report, f)
+        print("Done...")
+
+    # Calculate date the report is created
+    def get_now(self):
+        # Using datetime from datetime library
+        now = datetime.now()
+        return now.strftime("%d/%m/%Y %H:%M:%S")
+
+    # Function to sort products to find lowest price
+    def get_best_item(self):
+        try:
+            return sorted(self.data, key=lambda k: k['price'])[0]
+        except Exception as e:
+            # Code runs if sorting fails
+            print(e)
+            print("Problem with sorting items")
+            return None
 
 
 if __name__ == '__main__':
     amazon = AmazonAPI(NAME, FILTERS, BASE_URL, CURRENCY)
     data = amazon.run()
-    print(data)
-    print(len(data))
+    GenerateReport(NAME, FILTERS, BASE_URL, CURRENCY, data)
