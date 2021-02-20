@@ -20,7 +20,7 @@ def get_web_driver_options():
     return webdriver.ChromeOptions()
 
 
-def set_ignore_certificate_error(option):
+def set_ignore_certificate_error(options):
     options.add_argument('--ignore-certificate-errors')
 
 
