@@ -173,12 +173,23 @@ class AmazonAPI:
 
 
 class GenerateReport:
-    def __init__(self):
-        pass
+    self.data = data
+        self.file_name = file_name
+        self.filters = filters
+        self.base_link = base_link
+        self.currency = currency
+        report = {
+            'title': self.file_name,
+            'date': self.get_now(),
+            'best_item': self.get_best_item(),
+            'currency': self.currency,
+            'filters': self.filters,
+            'base_link': self.base_link,
+            'products': self.data
+        }
 
 
 if __name__ == '__main__':
     amazon = AmazonAPI(NAME, FILTERS, BASE_URL, CURRENCY)
     data = amazon.run()
-    print(data)
     print(len(data))
