@@ -4,16 +4,13 @@ from amazon_config import(get_web_driver_options, get_chrome_web_driver, set_ign
 
 # Imports from third party libraries
 from selenium.webdriver.common.keys import Keys
+from selenium.common.exceptions import NoSuchElementException
+import json
 import time
+from datetime import datetime
 
-
-class GenerateReport:
-    def __init__(self):
-        pass
 
 # Creating a class that scrapes all needed information from the Base URL
-
-
 class AmazonAPI:
     # Initialising all values needed
     def __init__(self, search_term, filters, base_url, currency):
@@ -54,11 +51,11 @@ class AmazonAPI:
             print(e)
             return links
 
-    # Function to cut out the product Id out of link
+    # Function to cut out the product Id (in this case ASIN: Amazon Standard Identification Number) out of link
     def get_asin(self, product_link):
         return product_link[product_link.find('/dp/') + 4:product_link.find('/ref')]
 
-    # Using function that cuts out product Id on all returned link
+    # Using function that cuts out product Id (in this case ASIN: Amazon Standard Identification Number) on all returned link
     def get_asins(self, links):
         return [self.get_asin(link) for link in links]
 
@@ -69,7 +66,7 @@ class AmazonAPI:
     # Getting the title of the product from every link returned
     def get_title(self):
         try:
-            return self.driver.find_elements_by_id('productTitle').text
+            return self.driver.find_element_by_id('productTitle').text
         except Exception as e:
             print(e)
             print(f"Can't get title of a product - {self.driver.current_url}")
@@ -78,17 +75,52 @@ class AmazonAPI:
     # Getting the seller of the product from every link returned
     def get_seller(self):
         try:
-            return self.driver.find_elements_by_id('bylineInfo').text
+            return self.driver.find_element_by_id('bylineInfo').text
         except Exception as e:
             print(e)
             print(f"Can't get seller of a product - {self.driver.current_url}")
             return None
 
+    # Function to convert the price in good readable format in get_price()
+    def convert_price(self, price):
+        price = price.split(self.currency)[1]
+        try:
+            price = price.split("\n")[0] + "." + price.split("\n")[1]
+        except:
+            Exception()
+        try:
+            price = price.split(",")[0] + price.split(",")[1]
+        except:
+            Exception()
+        return float(price)
+
     # Getting the price of the product from every link returned
     def get_price(self):
-        return '99€'
+        price = None
+        try:
+            price = self.driver.find_element_by_id('priceblock_ourprice').text
+            price = self.convert_price(price)
+        except NoSuchElementException:
+            try:
+                availability = self.driver.find_element_by_id(
+                    'availability').text
+                if 'Available' in availability:
+                    price = self.driver.find_element_by_class_name(
+                        'olp-padding-right').text
+                    price = price[price.find(self.currency):]
+                    price = self.convert_price(price)
+            except Exception as e:
+                print(e)
+                print(
+                    f"Can't get price of a product - {self.driver.current_url}")
+                return None
+        except Exception as e:
+            print(e)
+            print(f"Can't get price of a product - {self.driver.current_url}")
+            return None
+        return price
 
-    # Function that rund the functions to get information for single product
+    # Function that runs the functions to get information for single product
     def get_single_product_info(self, asin):
         print(f"Product ID: {asin} - getting data...")
         product_short_url = self.shorten_url(asin)
@@ -97,6 +129,16 @@ class AmazonAPI:
         title = self.get_title()
         seller = self.get_seller()
         price = self.get_price()
+        if title and seller and price:
+            product_info = {
+                'asin': asin,
+                'url': product_short_url,
+                'title': title,
+                'seller': seller,
+                'price': price
+            }
+            return product_info
+        return None
 
     # Calling the function that gets information about the product on all returned links
     def get_products_info(self, links):
@@ -104,6 +146,9 @@ class AmazonAPI:
         products = []
         for asin in asins:
             product = self.get_single_product_info(asin)
+            if product:
+                products.append(product)
+        return products
 
     # Function that first calls the function to get all relevant links and then get the information from these links
     def run(self):
@@ -121,10 +166,19 @@ class AmazonAPI:
         print("Getting info about products...")
         # Getting information from all links
         products = self.get_products_info(links)
+        # Close browser when everything is done
         self.driver.quit()
+        # Return products to create Report
+        return products
+
+
+class GenerateReport:
+    def __init__(self):
+        pass
 
 
 if __name__ == '__main__':
-    print('HEY!!!')
     amazon = AmazonAPI(NAME, FILTERS, BASE_URL, CURRENCY)
-    amazon.run()
+    data = amazon.run()
+    print(data)
+    print(len(data))
