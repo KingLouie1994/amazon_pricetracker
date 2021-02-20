@@ -1,6 +1,15 @@
 # Imports from the amazon_config file
-from amazon_config import(get_web_driver_options, get_chrome_web_driver, set_ignore_certificate_error,
-                          set_browser_as_incognito, NAME, CURRENCY, FILTERS, BASE_URL, DIRECTORY)
+from amazon_config import (
+    get_web_driver_options,
+    get_chrome_web_driver,
+    set_ignore_certificate_error,
+    set_browser_as_incognito,
+    NAME,
+    CURRENCY,
+    FILTERS,
+    BASE_URL,
+    DIRECTORY
+)
 
 # Imports from third party libraries
 from selenium.webdriver.common.keys import Keys
@@ -110,12 +119,10 @@ class AmazonAPI:
                     price = price[price.find(self.currency):]
                     price = self.convert_price(price)
             except Exception as e:
-                print(e)
                 print(
                     f"Can't get price of a product - {self.driver.current_url}")
                 return None
         except Exception as e:
-            print(e)
             print(f"Can't get price of a product - {self.driver.current_url}")
             return None
         return price
@@ -157,7 +164,7 @@ class AmazonAPI:
         # Get all relevant links
         links = self.get_products_links()
         time.sleep(1)
-        # Default if no links can be found
+        # If no links can be found
         if not links:
             print('Stopped script.')
             return
