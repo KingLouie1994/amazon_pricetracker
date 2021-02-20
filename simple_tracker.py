@@ -224,5 +224,4 @@ class GenerateReport:
 if __name__ == '__main__':
     amazon = AmazonAPI(NAME, FILTERS, BASE_URL, CURRENCY)
     data = amazon.run()
-    print(len(data))
     GenerateReport(NAME, FILTERS, BASE_URL, CURRENCY, data)
