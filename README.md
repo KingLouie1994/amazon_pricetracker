@@ -1,1 +1,3 @@
 # amazon_pricetracker
+
+This project is a pricetracker optimized for the german amazon page. It is built from scratch only using Python and Selenium. To fully unterstand how it works have a look at the code that is completely commented. It is my first experience with web scraping. Inside the config file the user of this script can setup all parameters like price filter, currency, product name and even base url. To be able to use the script the user needs all dependenies listet in the requirements file.

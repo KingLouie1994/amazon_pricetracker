@@ -1,5 +1,5 @@
-# Imports from the amazon_config file
-from amazon_config import (
+# Imports from the config file
+from config import (
     get_web_driver_options,
     get_chrome_web_driver,
     set_ignore_certificate_error,
